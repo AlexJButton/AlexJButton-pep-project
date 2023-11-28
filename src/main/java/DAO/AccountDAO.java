@@ -4,8 +4,6 @@ import Model.Account;
 import Util.ConnectionUtil;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AccountDAO {
 
@@ -33,7 +31,7 @@ public class AccountDAO {
         return null;
     }
 
-    // Funtion to add a book to the table
+    // Funtion to add an account to the table
     public Account createAccount(Account acc) {
         Connection connection = ConnectionUtil.getConnection();
         try {
@@ -60,5 +58,25 @@ public class AccountDAO {
             System.out.println(e.getMessage());
         }
         return null;
+    }
+
+    // Function to see if a user ID is in the table
+    public Boolean doesAccountExist(int account_id) {
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            // Making the command
+            String sql = "SELECT * FROM account WHERE account_id=?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, account_id);
+
+            // Running the command
+            ResultSet rs = preparedStatement.executeQuery();
+            while(rs.next()){
+                return true;
+            }
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return false;
     }
 }

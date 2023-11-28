@@ -22,7 +22,7 @@ public class AccountService {
         }
         return null;
     }
-
+    
     public Account findAccount(Account acc) {
         Account checkAcc = accountDAO.findAccount(acc.username);
         if (checkAcc != null) {
@@ -31,5 +31,9 @@ public class AccountService {
             }
         }
         return null;
+    }
+
+    public Boolean doesAccountExist(int account_id) {
+        return accountDAO.doesAccountExist(account_id);
     }
 }
