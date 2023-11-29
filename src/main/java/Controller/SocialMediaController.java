@@ -1,5 +1,12 @@
 package Controller;
 
+import static org.mockito.Mockito.calls;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.h2.util.json.JSONObject;
+
 import Model.Account;
 import Model.Message;
 import Service.AccountService;
@@ -31,9 +38,19 @@ public class SocialMediaController {
         app.post("/register", this::registerAccount);
 
         // The login account endpoint
-        app.post("messages", this::loginAccount);
+        app.post("/login", this::loginAccount);
 
         // The create message endpoint
+        app.post("/messages", this::createMessage);
+
+        // The get all messages endpoint
+        app.get("/messages", this::getMessages);
+
+        // The get message by id endpoint
+        app.get("/messages/{message_id}", this::getMessageByID);
+
+
+        
 
         return app;
     }
@@ -62,11 +79,11 @@ public class SocialMediaController {
             Account possibleAccount = accountService.registerAccount(newAccount);
 
             if (possibleAccount != null) {
-                String jsonResponse = "{\"account_id\":" + possibleAccount.getAccount_id() +
-                                       ",\"username\":\"" + possibleAccount.getUsername() +
-                                       "\",\"password\":\"" + possibleAccount.getPassword() + "\"}";
-                context.contentType("application/json").result(jsonResponse);
-                context.status(200);
+                // String jsonResponse = "{\"account_id\":" + possibleAccount.getAccount_id() +
+                //                        ",\"username\":\"" + possibleAccount.getUsername() +
+                //                        "\",\"password\":\"" + possibleAccount.getPassword() + "\"}";
+                // context.contentType("application/json").result(jsonResponse);
+                context.status(200).json(possibleAccount);
                 return;
             } 
         }
@@ -75,7 +92,7 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * This is the login endpoint
      * @param context The Javalin Context object manages information about both the HTTP request and response.
      * @return The account username, password, and id returned as JSON.
      */
@@ -88,11 +105,11 @@ public class SocialMediaController {
             Account possibleAccount = accountService.findAccount(newAccount);
 
             if (possibleAccount != null) {
-                String jsonResponse = "{\"account_id\":" + possibleAccount.getAccount_id() +
-                                       ",\"username\":\"" + possibleAccount.getUsername() +
-                                       "\",\"password\":\"" + possibleAccount.getPassword() + "\"}";
-                context.contentType("application/json").result(jsonResponse);
-                context.status(200);
+                // String jsonResponse = "{\"account_id\":" + possibleAccount.getAccount_id() +
+                //                        ",\"username\":\"" + possibleAccount.getUsername() +
+                //                        "\",\"password\":\"" + possibleAccount.getPassword() + "\"}";
+                // context.contentType("application/json").result(jsonResponse);
+                context.status(200).json(possibleAccount);
                 return;
             }
         }
@@ -101,9 +118,9 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * This is the create message endpoint
      * @param context The Javalin Context object manages information about both the HTTP request and response.
-     * @return .
+     * @return The created message along with it's id.
      */
     private void createMessage(Context context) {
         String posted_by = context.formParam("posted_by");
@@ -126,19 +143,67 @@ public class SocialMediaController {
             Message possibleMessage = messageService.createMessage(newMessage);
 
             if (possibleMessage != null) {
-                String jsonResponse = "{" +
-                                    "\"message_id\":" + possibleMessage.getMessage_id() + "," +
-                                    "\"posted_by\":" + possibleMessage.getPosted_by() + "," +
-                                    "\"message_text\":\"" + possibleMessage.getMessage_text() + "\"," +
-                                    "\"time_posted_epoch\":" + possibleMessage.getTime_posted_epoch() +
-                                    "}";
-                context.contentType("application/json").result(jsonResponse);
-                context.status(200);
+                // String jsonResponse = "{" +
+                //                     "\"message_id\":" + possibleMessage.getMessage_id() + "," +
+                //                     "\"posted_by\":" + possibleMessage.getPosted_by() + "," +
+                //                     "\"message_text\":\"" + possibleMessage.getMessage_text() + "\"," +
+                //                     "\"time_posted_epoch\":" + possibleMessage.getTime_posted_epoch() +
+                //                     "}";
+                // context.contentType("application/json").result(jsonResponse);
+                context.status(200).json(possibleMessage);
                 return;
             }
         }
 
         context.status(400).json("Failed to create the message");
+    }
+
+    /**
+     * This is the endpoint to get all messages as a list
+     * @param context The Javalin Context object manages information about both the HTTP request and response.
+     * @return The list of messages in the database.
+     */
+    private void getMessages(Context context) {
+        List<Message> messages = messageService.getAllMessages();
+        context.status(200).json(messages);
+    }
+
+    /**
+     * This is the endpoint to get a message by it's id
+     * @param context The Javalin Context object manages information about both the HTTP request and response.
+     * @return The requested message.
+     */
+    private void getMessageByID(Context context) {
+        String messageIdString = context.pathParam("message_id");
+        try {
+            int message_id = Integer.parseInt(messageIdString);
+            Message possibleMessage = messageService.getMessageById(message_id)
+            if (possibleMessage != null) {
+                context.status(200).json(possibleMessage);
+                return;
+            }
+            context.status(200).json("");
+        } catch (Exception e) {
+            context.status(200).json("");
+        }
+    }
+
+    /**
+     * 
+     * @param context The Javalin Context object manages information about both the HTTP request and response.
+     * @return .
+     */
+    private void (Context context) {
+        
+    }
+
+    /**
+     * 
+     * @param context The Javalin Context object manages information about both the HTTP request and response.
+     * @return .
+     */
+    private void (Context context) {
+        
     }
 
     /**
