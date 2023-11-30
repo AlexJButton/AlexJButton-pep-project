@@ -49,6 +49,15 @@ public class SocialMediaController {
         // The get message by id endpoint
         app.get("/messages/{message_id}", this::getMessageByID);
 
+        // This is the endpoint to delete a message
+        app.delete("/messages/{message_id}", this::deleteMessageByID);
+
+        // The endpoint to update a message
+        app.patch("/messages/{message_id}", this::updateMessage);
+
+        // The endpoint to get all messages by an account
+        app.get("/accounts/{account_id}/messages", this::getMessagesByAccout);
+
 
         
 
@@ -69,8 +78,9 @@ public class SocialMediaController {
      * @return The account username, password, and id returned as JSON.
      */
     private void registerAccount(Context context) {
-        String username = context.formParam("username");
-        String password = context.formParam("password");
+        Account bodyAccount = context.bodyAsClass(Account.class);
+        String username = bodyAccount.getUsername();
+        String password = bodyAccount.getPassword();
 
         Boolean usernameCheck = (username != null) && (!username.isBlank());
         Boolean passwordCheck = (password != null) && (password.length() > 4);
@@ -88,7 +98,7 @@ public class SocialMediaController {
             } 
         }
 
-        context.status(400).json("Given values were invalid or username already exists.");
+        context.status(400).json("");
     }
 
     /**
@@ -97,8 +107,9 @@ public class SocialMediaController {
      * @return The account username, password, and id returned as JSON.
      */
     private void loginAccount(Context context) {
-        String username = context.formParam("username");
-        String password = context.formParam("password");
+        Account bodyAccount = context.bodyAsClass(Account.class);
+        String username = bodyAccount.getUsername();
+        String password = bodyAccount.getPassword();
 
         if (username != null && password != null) {
             Account newAccount = new Account(username, password);
@@ -114,7 +125,7 @@ public class SocialMediaController {
             }
         }
 
-        context.status(401).json("Username or password is incorrect");
+        context.status(401).json("");
     }
 
     /**
@@ -123,23 +134,16 @@ public class SocialMediaController {
      * @return The created message along with it's id.
      */
     private void createMessage(Context context) {
-        String posted_by = context.formParam("posted_by");
-        String message_text = context.formParam("message_text");
-        String time_posted_epoch = context.formParam("time_posted_epoch");
-        int posted_byInt = -1;
-        long time_posted_epochLong = 0;
+        Message bodyMessage = context.bodyAsClass(Message.class);
+        int posted_by = bodyMessage.getPosted_by();
+        String message_text = bodyMessage.getMessage_text();
+        Long time_posted_epoch = bodyMessage.getTime_posted_epoch();
 
-        try {
-            posted_byInt = Integer.parseInt(posted_by);
-            time_posted_epochLong = Long.parseLong(time_posted_epoch);
-        } catch (Exception e){
-            context.status(400).json("Invalid account ID or time posted epoch.");
-        }
-        Boolean posted_byCheck = (posted_by != null) && (accountService.doesAccountExist(posted_byInt));
+        Boolean posted_byCheck = accountService.doesAccountExist(posted_by);
         Boolean message_textCheck = (message_text != null) && (message_text.length() <= 255) && (!message_text.isBlank());
 
         if (posted_byCheck && message_textCheck && time_posted_epoch != null) {
-            Message newMessage = new Message(posted_byInt, message_text, time_posted_epochLong);
+            Message newMessage = new Message(posted_by, message_text, time_posted_epoch);
             Message possibleMessage = messageService.createMessage(newMessage);
 
             if (possibleMessage != null) {
@@ -155,7 +159,7 @@ public class SocialMediaController {
             }
         }
 
-        context.status(400).json("Failed to create the message");
+        context.status(400).json("");
     }
 
     /**
@@ -177,7 +181,7 @@ public class SocialMediaController {
         String messageIdString = context.pathParam("message_id");
         try {
             int message_id = Integer.parseInt(messageIdString);
-            Message possibleMessage = messageService.getMessageById(message_id)
+            Message possibleMessage = messageService.getMessageById(message_id);
             if (possibleMessage != null) {
                 context.status(200).json(possibleMessage);
                 return;
@@ -189,30 +193,68 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * This is the endpoint to delete a message by it's id
      * @param context The Javalin Context object manages information about both the HTTP request and response.
-     * @return .
+     * @return The requested message.
      */
-    private void (Context context) {
-        
+    private void deleteMessageByID(Context context) {
+        String messageIdString = context.pathParam("message_id");
+        try {
+            int message_id = Integer.parseInt(messageIdString);
+            Message possibleMessage = messageService.getMessageById(message_id);
+            if (possibleMessage != null) {
+                Message deletedMessage = messageService.deletMessageById(message_id);
+                context.status(200).json(deletedMessage);
+                return;
+            }
+            context.status(200).json("");
+        } catch (Exception e) {
+            context.status(200).json("");
+        }
     }
 
     /**
-     * 
+     * This is the endpoint used to update a message
      * @param context The Javalin Context object manages information about both the HTTP request and response.
-     * @return .
+     * @return The message is returned if it exists, else it is blank.
      */
-    private void (Context context) {
-        
+    private void updateMessage(Context context) {
+        Message bodyMessage = context.bodyAsClass(Message.class);
+        String message_id_string = context.pathParam("message_id");
+        String message_text = bodyMessage.getMessage_text();
+
+        try {
+            int message_id = Integer.parseInt(message_id_string);
+            Message possibleMessage = messageService.getMessageById(message_id);
+            Boolean message_textCheck = (message_text == null) || (message_text.length() > 255) || (message_text.isBlank());
+            if ((possibleMessage == null) || message_textCheck) {
+                context.status(400).json("");
+                return;
+            }
+            Message updatedMessage = messageService.updatMessageById(message_id, message_text);
+
+            context.status(200).json(updatedMessage);
+        } catch (Exception e) {
+            context.status(400).json("");
+        }
     }
 
     /**
-     * 
+     * This is the endpoint used to find the messages made by an account
      * @param context The Javalin Context object manages information about both the HTTP request and response.
      * @return .
      */
-    private void (Context context) {
-        
+    private void getMessagesByAccout(Context context) {
+        String accountIdString = context.pathParam("account_id");
+        List<Message> messages = new ArrayList<Message>();
+        try {
+            int account_id = Integer.parseInt(accountIdString);
+            messages = messageService.getMessageByAccount(account_id);
+
+            context.status(200).json(messages);
+        } catch (Exception e) {
+            context.status(200).json(messages);
+        }
     }
 
 
