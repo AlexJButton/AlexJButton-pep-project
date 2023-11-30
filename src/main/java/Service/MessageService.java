@@ -1,9 +1,7 @@
 package Service;
 
-import Model.Message;
-
 import java.util.List;
-
+import Model.Message;
 import DAO.MessageDAO;
 
 public class MessageService {

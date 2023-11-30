@@ -1,12 +1,7 @@
 package Controller;
 
-import static org.mockito.Mockito.calls;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import org.h2.util.json.JSONObject;
-
 import Model.Account;
 import Model.Message;
 import Service.AccountService;
