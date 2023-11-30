@@ -58,9 +58,6 @@ public class SocialMediaController {
         // The endpoint to get all messages by an account
         app.get("/accounts/{account_id}/messages", this::getMessagesByAccout);
 
-
-        
-
         return app;
     }
 
@@ -89,10 +86,6 @@ public class SocialMediaController {
             Account possibleAccount = accountService.registerAccount(newAccount);
 
             if (possibleAccount != null) {
-                // String jsonResponse = "{\"account_id\":" + possibleAccount.getAccount_id() +
-                //                        ",\"username\":\"" + possibleAccount.getUsername() +
-                //                        "\",\"password\":\"" + possibleAccount.getPassword() + "\"}";
-                // context.contentType("application/json").result(jsonResponse);
                 context.status(200).json(possibleAccount);
                 return;
             } 
@@ -116,10 +109,6 @@ public class SocialMediaController {
             Account possibleAccount = accountService.findAccount(newAccount);
 
             if (possibleAccount != null) {
-                // String jsonResponse = "{\"account_id\":" + possibleAccount.getAccount_id() +
-                //                        ",\"username\":\"" + possibleAccount.getUsername() +
-                //                        "\",\"password\":\"" + possibleAccount.getPassword() + "\"}";
-                // context.contentType("application/json").result(jsonResponse);
                 context.status(200).json(possibleAccount);
                 return;
             }
@@ -147,13 +136,6 @@ public class SocialMediaController {
             Message possibleMessage = messageService.createMessage(newMessage);
 
             if (possibleMessage != null) {
-                // String jsonResponse = "{" +
-                //                     "\"message_id\":" + possibleMessage.getMessage_id() + "," +
-                //                     "\"posted_by\":" + possibleMessage.getPosted_by() + "," +
-                //                     "\"message_text\":\"" + possibleMessage.getMessage_text() + "\"," +
-                //                     "\"time_posted_epoch\":" + possibleMessage.getTime_posted_epoch() +
-                //                     "}";
-                // context.contentType("application/json").result(jsonResponse);
                 context.status(200).json(possibleMessage);
                 return;
             }
